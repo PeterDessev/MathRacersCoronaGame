@@ -2,7 +2,6 @@ local widget = require( "widget" )
 local composer = require( "composer" )
 local scene = composer.newScene()
 local usernames = require("usernames")
-
 --------------------------------------------------------------------------------
 -- All code outside of the listener functions will only be executed ONCE
 -- unless "composer.removeScene()" is called.
@@ -10,16 +9,21 @@ local usernames = require("usernames")
 -- local forward references should go here
 --------------------------------------------------------------------------------
         --User Inputs
-        local logInUsernameInput = native.newTextField(display.actualContentWidth/2, (2*display.actualContentHeight)/6.7, display.actualContentWidth-100, 35)
-        logInUsernameInput.placeholder = "Username"
-        logInUsernameInput.font = native.newFont(Arial)
+        local CAUsernameInput = native.newTextField(display.actualContentWidth/2, (2*display.actualContentHeight)/6.7, display.actualContentWidth-100, 35)
+        CAUsernameInput.placeholder = "Username"
+        CAUsernameInput.font = native.newFont(Arial)
+
+
+        local CAPasswordInput = native.newTextField(display.actualContentWidth/2, (3*display.actualContentHeight)/7.5, display.actualContentWidth-100, 35)
+        CAPasswordInput.placeholder = "Password"
+        CAPasswordInput.font = native.newFont(Arial)
+        CAPasswordInput.isSecure = true
+
         
-
-
-        local logInPasswordInput = native.newTextField(display.actualContentWidth/2, (3*display.actualContentHeight)/7.5, display.actualContentWidth-100, 35)
-        logInPasswordInput.placeholder = "Password"
-        logInPasswordInput.font = native.newFont(Arial)
-        logInPasswordInput.isSecure = true
+        local confirmPasswordInput = native.newTextField(display.actualContentWidth/2, (3*display.actualContentHeight)/6, display.actualContentWidth-100, 35)
+        confirmPasswordInput.placeholder = "Confirm Password"
+        confirmPasswordInput.font = native.newFont(Arial)
+        confirmPasswordInput.isSecure = true
 --------------------------------------------------------------------------------
 -- "scene:create()"
 --------------------------------------------------------------------------------
@@ -31,14 +35,28 @@ else
     native.setProperty( "androidSystemUiVisibility", "immersiveSticky" ) 
 end
     
-            local logInText = display.newText("Log-In", display.actualContentWidth/2, display.actualContentHeight/6, Arial, 40)
-        logInText:setFillColor(0, 0, 0)
-        sceneGroup:insert(logInText)
+            local createAccountTextOptions = {
+            text = "Create An Account",
+            x = display.actualContentWidth/2,
+            y = display.actualContentHeight/8.5,
+            font = Arial,
+            fontSize = 40,
+            width = display.actualContentWidth/2,
+            align = "center",
+        }
+        local CreateAccountText1 = display.newText(createAccountTextOptions)
+        CreateAccountText1:setFillColor(0, 0, 0)
+        sceneGroup:insert(CreateAccountText1)
 
+        --[[
+        local CreateAccountText2 = display.newText("Account", display.actualContentWidth/2, display.actualContentHeight/6, Arial, 40)
+        CreateAccountText2:setFillColor(0, 0, 0)
+        sceneGroup:insert(CreateAccountText2)--]]
+        
         local errorOptions = {
             text = "",
             x = display.actualContentWidth/2,
-            y = 4*display.actualContentHeight/6 + display.actualContentHeight/13,
+            y = 5*display.actualContentHeight/6 - display.actualContentHeight/9,
             font = Arial,
             fontSize = 12,
 
@@ -48,105 +66,89 @@ end
         errorText:setFillColor(1, 0, 0)
         sceneGroup:insert(errorText)
 
-
-    
-    
-    
         --Check LogIn Info
-        function logInCheck(event)
-            --
+        function createAccountCheck(event)
             if event.phase == "ended" then
-                if(logInUsernameInput.text == nil or logInUsernameInput.text == "") then
+                if (CAUsernameInput.text == nil or CAUsernameInput.text == "") then
                     errorText.text = "Please enter a username"
-                elseif(getUser(logInUsernameInput.text) == nil or getUser(logInUsernameInput.text) ~= logInPasswordInput.text) then
-                    errorText.text = "Username or password incorrect, please try again"
+                elseif (getUser(CAUsernameInput.text) ~= nil) then
+                    errorText.text = "Username taken, try another one"
+                elseif (CAPasswordInput.text == "" or confirmPasswordInput.text == "")then
+                    errorText.text = "Please enter both passwords"
+                elseif (CAPasswordInput.text ~= confirmPasswordInput.text) then
+                    errorText.text = "Passwords don't match, try again"           
                 else
                     errorText.text = ""
-                    setCurrentUser(logInUsernameInput.text)
-                    logInUsernameInput.isVisible = false
-                    logInPasswordInput.isVisible = false
-                 
-                        composer.gotoScene("loggedInScreen")
-                
+                    
+                    addUser(CAUsernameInput.text, CAPasswordInput.text)
+                    setCurrentUser(CAUsernameInput.text)
+                    
+                    CAUsernameInput.isVisible = false
+                    CAPasswordInput.isVisible = false
+                    confirmPasswordInput.isVisible = false
+                    
+                    createUser(getCurrentUser())
+                    local screenTransitionOptions = {
+                        params = {currentUser = CAUsernameInput.text},
+                    }
+                    composer.gotoScene("GameLevels.tutorial", screenTransitionOptions)
+
                 end
             end
-            --]]
         end
 
 
- 
-        local logInButton = widget.newButton(
+
+        local createAccountButton = widget.newButton(
             {
-                label = "Log-In",
+
+                label = "Create Account",
                 labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
                 fontSize = 20,
-                width = 80,
-                height = 40,
-                x = display.actualContentWidth/2 - display.actualContentWidth/4,
-                y = 3*display.actualContentHeight/4 - display.actualContentHeight/4.5,
+                width = 160,
+                height = 40, 
+                x = display.actualContentWidth/2 + display.actualContentWidth/5,
+                y = 3*display.actualContentHeight/4 - display.actualContentHeight/8,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
-                onEvent = logInCheck,
+                onEvent = createAccountCheck,
             }
         )
-        sceneGroup:insert(logInButton)
+        sceneGroup:insert(createAccountButton)
 
 
 
 
         --go create account
+
         function goToCreateAccount()
             errorText.text = ""
-            logInUsernameInput.isVisible = false
-            logInPasswordInput.isVisible = false
-            composer.gotoScene("createAccountScreen")
+            CAUsernameInput.isVisible = false
+            CAPasswordInput.isVisible = false
+            confirmPasswordInput.isVisible = false
+            composer.gotoScene("logInScene")
         end
-    
-        
 
-        local createAccountButton = widget.newButton(
+
+        local backButton = widget.newButton(
             {
-                label = "Create Account",
+                label = "Back",
                 labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
                 fontSize = 20,
-                width = 160,
+                width = 70,
                 height = 40,
-                x = display.actualContentWidth/2 + display.actualContentWidth/5,
-                y = 3*display.actualContentHeight/4 - display.actualContentHeight/4.5,
+                x = display.actualContentWidth/2 - display.actualContentWidth/4,
+                y = 3*display.actualContentHeight/4 - display.actualContentHeight/8,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
                 onRelease = goToCreateAccount
             }
         )
-        sceneGroup:insert(createAccountButton)
-
+        sceneGroup:insert(backButton)
         
-        --go to leaderboard        
-       local function goToLeaderboard()
-            errorText.text = ""
-            logInUsernameInput.isVisible = false
-            logInPasswordInput.isVisible = false
-            setLeaderboardOrigin("logInScene")
-            composer.gotoScene("leaderboardScene")
-        end
-        
-        local leaderBoardButton = widget.newButton(
-            {
-                label = "Leaderboard",
-                labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
-                fontSize = 20,
-                width = 135,
-                height = 40,
-                x = display.actualContentWidth/2,
-                y = 3*display.actualContentHeight/4 - display.actualContentHeight/10,
-                shape = "roundedRect",
-                fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
-                onRelease = goToLeaderboard
-            }
-        )
-        sceneGroup:insert(leaderBoardButton)
     -- Initialize the scene here.
     -- Example: add display objects to "sceneGroup", add touch listeners, etc.
+
 end
 
 --------------------------------------------------------------------------------
@@ -157,10 +159,10 @@ function scene:show( event )
     local phase = event.phase
 
     if ( phase == "will" ) then
-        logInUsernameInput.isVisible = true
-        logInPasswordInput.isVisible = true
-        logInUsernameInput.text = ""
-        logInPasswordInput.text = ""
+
+        CAUsernameInput.isVisible = true
+        CAPasswordInput.isVisible = true
+        confirmPasswordInput.isVisible = true
         -- Called when the scene is still off screen (but is about to come on screen).
     elseif ( phase == "did" ) then
     -- Called when the scene is now on screen.
@@ -177,6 +179,7 @@ function scene:hide( event )
     local phase = event.phase
 
     if ( phase == "will" ) then
+        
     -- Called when the scene is on screen (but is about to go off screen).
     -- Insert code here to "pause" the scene.
     -- Example: stop timers, stop animation, stop audio, etc.
@@ -206,3 +209,4 @@ scene:addEventListener( "destroy", scene )
 --------------------------------------------------------------------------------
 
 return scene
+
