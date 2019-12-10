@@ -1,2 +1,3 @@
 # Math Racers Corona Game
-My attempt at making a lua game for the purpose of learning lua. 
+An educational game designed to help students with their mathematical abilities
+
