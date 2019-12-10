@@ -162,9 +162,9 @@ function getCar(user)
     end 
 end
 
-function setCar(user, car)
-    local q = [[UPDATE users SET car="]] .. car .. [[" WHERE name="]] .. user .. [[";]]
+function setCar(car)
+    local q = [[UPDATE users SET car="]] .. tostring(car) .. [[" WHERE name="]] .. tostring(getCurrentUser()) .. [[";]]
     db:exec( q )
-    print("set car to " .. car)
+    print("set " .. getCurrentUser() .. "'s car to " .. getCar(getCurrentUser()))
     return true
 end

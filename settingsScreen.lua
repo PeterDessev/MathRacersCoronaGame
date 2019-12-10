@@ -57,7 +57,7 @@ function scene:show( event )
             
             carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.actualContentWidth/5, display.actualContentHeight/5)
             carImage.x, carImage.y = display.actualContentWidth/2, display.actualContentHeight/2.2
-            setCar(getCurrentUser(), carNames[currentSelection])
+            setCar(carNames[currentSelection])
         end
         
         local nextCarButton = widget.newButton(
@@ -86,7 +86,7 @@ function scene:show( event )
             
             carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.actualContentWidth/5, display.actualContentHeight/5)
             carImage.x, carImage.y = display.actualContentWidth/2, display.actualContentHeight/2.2
-            setCar(getCurrentUser(), carNames[currentSelection])
+            setCar(carNames[currentSelection])
         end
         
         local previousCarButton = widget.newButton(
