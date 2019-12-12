@@ -2,6 +2,8 @@ local widget = require( "widget" )
 local composer = require( "composer" )
 local scene = composer.newScene()
 local usernames = require("usernames")
+local carImage
+local carRotation = 360
 
 --------------------------------------------------------------------------------
 -- All code outside of the listener functions will only be executed ONCE 
@@ -28,7 +30,11 @@ function scene:show( event )
   local phase = event.phase
 
   if ( phase == "will" ) then
-        
+            if system.getInfo( "androidApiLevel" ) and system.getInfo( "androidApiLevel" ) < 19 then
+    native.setProperty( "androidSystemUiVisibility", "lowProfile" )
+else
+    native.setProperty( "androidSystemUiVisibility", "immersiveSticky" ) 
+end
         
         --Car selection and display
         car = display.newGroup()
@@ -43,9 +49,9 @@ function scene:show( event )
             end
         end
         
-        local carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.actualContentWidth/5, display.actualContentHeight/5)
+        carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.contentWidth/5, display.contentHeight/5)
          
-        carImage.x, carImage.y = display.actualContentWidth/2, display.actualContentHeight/2.2
+        carImage.x, carImage.y = display.contentWidth/2, display.contentHeight/2.2
         
         --showing the next car
         function nextCar()
@@ -55,8 +61,8 @@ function scene:show( event )
             currentSelection = currentSelection + 1
             carImage:removeSelf()
             
-            carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.actualContentWidth/5, display.actualContentHeight/5)
-            carImage.x, carImage.y = display.actualContentWidth/2, display.actualContentHeight/2.2
+            carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.contentWidth/5, display.contentHeight/5)
+            carImage.x, carImage.y = display.contentWidth/2, display.contentHeight/2.2
             setCar(carNames[currentSelection])
         end
         
@@ -65,10 +71,10 @@ function scene:show( event )
                 label = "Next Car",
                 labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
                 fontSize = 20,
-                width = display.actualContentWidth/2.5,
+                width = display.contentWidth/2.5,
                 height = 40,
-                x = display.actualContentWidth/1.3,
-                y = display.actualContentHeight/1.55,
+                x = display.contentWidth/1.335,
+                y = display.contentHeight/1.55,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
                 onRelease = nextCar
@@ -78,14 +84,14 @@ function scene:show( event )
         
         --showing the previous car
         function previousCar()
-            if currentSelection - 1 < 0 then
+            if currentSelection - 1 < 1 then
                 currentSelection = table.getn(carNames)
             end
             currentSelection = currentSelection - 1
             carImage:removeSelf()
             
-            carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.actualContentWidth/5, display.actualContentHeight/5)
-            carImage.x, carImage.y = display.actualContentWidth/2, display.actualContentHeight/2.2
+            carImage = display.newImageRect(car, "Content/Cars/" .. carNames[currentSelection] .. ".png", display.contentWidth/5, display.contentHeight/5)
+            carImage.x, carImage.y = display.contentWidth/2, display.contentHeight/2.2
             setCar(carNames[currentSelection])
         end
         
@@ -94,13 +100,13 @@ function scene:show( event )
                 label = "Previous Car",
                 labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
                 fontSize = 20,
-                width = display.actualContentWidth/2.5,
+                width = display.contentWidth/2.5,
                 height = 40,
-                x = display.actualContentWidth/4,
-                y = display.actualContentHeight/1.55,
+                x = display.contentWidth/4,
+                y = display.contentHeight/1.55,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
-                onRelease = nextCar
+                onRelease = previousCar
             }
         )
         sceneGroup:insert(previousCarButton)
@@ -118,10 +124,10 @@ function scene:show( event )
                 label = "Log Out",
                 labelColor = {default={1, 0, 0}, over={1, 0, 0}},
                 fontSize = 20,
-                width = display.actualContentWidth - 30,
+                width = display.contentWidth - 30,
                 height = 40,
-                x = display.actualContentWidth/2,
-                y = display.actualContentHeight/1.35,
+                x = display.contentWidth/2,
+                y = display.contentHeight/1.35,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
                 onRelease = logout
@@ -141,10 +147,10 @@ function scene:show( event )
                 label = "Back",
                 labelColor = {default={0, 0.478, 1}, over={0, 0.478, 1}},
                 fontSize = 20,
-                width = display.actualContentWidth - 30,
+                width = display.contentWidth - 30,
                 height = 40,
-                x = display.actualContentWidth/2,
-                y = display.actualContentHeight/1.2,
+                x = display.contentWidth/2,
+                y = display.contentHeight/1.2,
                 shape = "roundedRect",
                 fillColor = {default={0.86, 0.86, 0.86}, over={0.6, 0.6, 0.6}},
                 onRelease = goBack
@@ -152,10 +158,17 @@ function scene:show( event )
         )
         sceneGroup:insert(backButton)
     -- Called when the scene is still off screen (but is about to come on screen).
+
+        function turnCar()
+            carImage.rotation = carRotation
+            carRotation = carRotation - 360/(60*12)
+            if carRotation < 0 then
+                carRotation = 360
+            end
+        end
+        
   elseif ( phase == "did" ) then
-    -- Called when the scene is now on screen.
-    -- Insert code here to make the scene come alive.
-    -- Example: start timers, begin animation, play audio, etc.
+        Runtime:addEventListener("enterFrame", turnCar) 
   end
 end
 
@@ -167,6 +180,9 @@ function scene:hide( event )
   local phase = event.phase
 
   if ( phase == "will" ) then
+        carImage:removeSelf()
+        Runtime:removeEventListener("enterFrame", turnCar)
+        sceneGroup:removeSelf()
     -- Called when the scene is on screen (but is about to go off screen).
     -- Insert code here to "pause" the scene.
     -- Example: stop timers, stop animation, stop audio, etc.

@@ -1,4 +1,4 @@
-local composer = require( "composer" )
+ local composer = require( "composer" )
 local GBCDataCabinet = require("plugin.GBCDataCabinet")
 local sqlite3 = require( "sqlite3" )
 
@@ -68,7 +68,7 @@ end
 local path = system.pathForFile( "level1Times.db", system.DocumentsDirectory )
 local db = sqlite3.open( path ) 
  
-local tableSetup = [[CREATE TABLE IF NOT EXISTS users ( UserID INTEGER PRIMARY KEY autoincrement, name, car, timeLevel1);]] 
+local tableSetup = [[CREATE TABLE IF NOT EXISTS users ( UserID INTEGER PRIMARY KEY autoincrement, name, car, Level1, Level2);]] 
 
 
 
@@ -77,25 +77,33 @@ local tableSetup = [[CREATE TABLE IF NOT EXISTS users ( UserID INTEGER PRIMARY K
 --local tableSetup = [[DROP TABLE users]]
 
 function createUser( user )
-    local q = [[INSERT INTO users VALUES ( NULL, "]] .. tostring(user) .. [[", "redCar", 10000);]]
+    print(type(user), user)
+    local q = [[INSERT INTO users VALUES ( NULL, "]].. tostring(user) .. [[", "redCar", 10000, 10000);]]
     db:exec( q )
     return true 
 end
 
 function setTime( time )
-    local q = [[UPDATE users SET timeLevel1=]] .. time .. [[ WHERE name="]] .. getCurrentUser() .. [[";]]
+    local q = [[UPDATE users SET Level1=]] .. time .. [[ WHERE name="]] .. getCurrentUser() .. [[";]]
     db:exec( q )
     return true
 end
 
-function getTime( user )
+function getTime( user, level)
     for row in db:nrows("SELECT * FROM users") do 
         if(row.name == user) then
-            
-            if tonumber(row.timeLevel1) <= 1000 then
-                return row.timeLevel1
-            else
-                return (" No time recorded.")
+            if level == "Level 1" then
+                if tonumber(row.Level1) <= 100 then
+                    return row.Level1
+                else
+                    return (" No time recorded.")
+                end
+            elseif level == "Level 2" then
+                if tonumber(row.Level2) <= 100 then
+                    return row.Level2
+                else
+                    return (" No time recorded.")
+                end
             end
         end
     end
@@ -108,39 +116,88 @@ function initiateTable()
     db:exec( tableSetup )
 end
 
-function checkAndUpdate( inputTime )
+function checkAndUpdate( inputTime, level )
     local people = {} 
     for row in db:nrows( "SELECT * FROM users" ) do
-        people[#people+1] =
-        {
-            Name = row.name,
-            Time = row.timeLevel1
-        }
-        if people[#people].Name == getCurrentUser() then
-            print("found User")
-            if tonumber(people[#people].Time) > inputTime or people[#people].Time== nil then
-                print("user beat previous time")
-                people[#people].Time = inputTime
-                local q = [[UPDATE users SET timeLevel1=]] .. inputTime .. [[ WHERE name="]] .. people[#people].Name .. [[";]]
-                db:exec( q )
-                print("Current time: " .. getTime(people[#people].Name))
-                return true
-            else return false end
+        if level == "Level 1" then
+            people[#people+1] =
+            {
+                Name = row.name,
+                Time = row.Level1
+            }
+            if people[#people].Name == getCurrentUser() then
+                print("found User")
+                if tonumber(people[#people].Time) > inputTime or people[#people].Time== nil then
+                    print("user beat previous time")
+                    people[#people].Time = inputTime
+                    local q = [[UPDATE users SET Level1=]] .. inputTime .. [[ WHERE name="]] .. people[#people].Name .. [[";]]
+                    db:exec( q )
+                    print("Current time: " .. getTime(people[#people].Name, level))
+                    return true
+                else return false end
+            end
+        elseif level == "Level 2" then
+            people[#people+1] =
+            {
+                Name = row.name,
+                Time = row.Level2
+            }
+            if people[#people].Name == getCurrentUser() then
+                print("found User")
+                if tonumber(people[#people].Time) > inputTime or people[#people].Time == nil then
+                    print("user beat previous time")
+                    people[#people].Time = inputTime
+                    local q = [[UPDATE users SET Level2=]] .. inputTime .. [[ WHERE name="]] .. people[#people].Name .. [[";]]
+                    db:exec( q )
+                    print("Current time: " .. getTime(people[#people].Name, level))
+                    return true
+                else return false end
+            end
         end
     end
 end
 
-function getAllTimes()
+function getAllTimes(level)
     local people = {}
+    print("")
+    print("Getting times for " .. level)
+    print("+-------------------------------------")
     for row in db:nrows( "SELECT * FROM users" ) do
---        print(row.name, row.timeLevel1)
-        people[#people+1] =
-        {
-            Name = row.name,
-            Time = row.timeLevel1
-        }
+        print("| " .. row.name, "   Level 1: " .. row.Level1, "  Level 2:" .. row.Level2)
+        print("+-------------------------------------")
+        if level == "Level1" then
+            --print("Getting times from Level 1")
+            people[#people+1] = {
+                Name = row.name,
+                Time = row.Level1
+            }
+        elseif level == "Level2" then
+            --print("Getting times from Level 2")
+            people[#people+1] = {
+                Name = row.name,
+                Time = row.Level2
+            }
+        end
     end
-    if people == nil then
+        
+--[[print(level)
+    local Names = {}
+    local Times = {}
+    
+    local people
+    for row in db:nrows( "SELECT * FROM users" ) do
+        print(row.name, row.Level1, row.Level2)
+        Names[#Names+1] = row.name
+    end
+    print(#Names)
+    if #Names ~= 0 then people = {} end
+    for row in db:nrows( "SELECT Level1 FROM users" ) do
+        print()
+        Times[#Times+1] = row[1]
+        people[#Times] = {Names[#Times], Times[#Times]}
+    end
+    --]]
+    if people[1].Name == nil then
         return "no Scores"
     else
 --        print("scores found")
@@ -148,17 +205,20 @@ function getAllTimes()
     end
 end
 
-
 function getCar(user)
     local car
     for row in db:nrows( "SELECT * FROM users" ) do
         car = row.car
-    end
-    if car == nil then
-        return "no car"
-    else
-        print("current car is " .. car)
-        return car
+        people = row.name
+        if people == user then
+            if car == nil then
+                print("no car")
+                return "no car"
+            else
+                print("current car is " .. car)
+                return car
+            end
+        end
     end 
 end
 
@@ -167,4 +227,4 @@ function setCar(car)
     db:exec( q )
     print("set " .. getCurrentUser() .. "'s car to " .. getCar(getCurrentUser()))
     return true
-end
+    end
