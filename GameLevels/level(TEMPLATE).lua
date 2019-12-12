@@ -214,9 +214,14 @@ end
     track.x, track.y = display.actualContentWidth/2, (display.actualContentWidth/1.05)
     print(track)
     --]]
-    local mapy = 406.34921264648
-    local mapx = 285.05096435547
-    local track = display.newImageRect(map, "Content/Levels/Level1.png", mapx, mapy)
+    local mapy = 406.34921264648    
+        
+        
+    local mapx = 285.05096435547                              --************************************************
+    local track = display.newImageRect(map, "Content/Levels/" --Add the rest of the Level name Here , mapx, mapy)
+                                                              --************************************************
+            
+            
     track.x, track.y = 160, 304.76190185547  --display.actualContentWidth/2, (display.actualContentWidth/1.05)
 
     local cary = 56.888891601562 --display.actualContentHeight/10
@@ -308,10 +313,9 @@ end
     end
     
     
-----------------------------------------------------------------------------------
-----      Turns Object, and Defining turns until Level Class is Finished      ----
-----                               CHANGE ME!!!                               ----
-----------------------------------------------------------------------------------
+-------------------------------
+----      Turns Object     ----
+-------------------------------
     --Car Orientation vs degrees:
     --       0
     --       |
@@ -355,62 +359,83 @@ end
            car.rotation = (initialAngle + ammount)
         end    
         
-        function self.getTurnAngle()                                                                            --   Turn Funciton
-               if carOrientation == "v" then                                                                          --   |-- Car is turning from virticle position
-                   if carTriggerDirection == "up" then                                                                --   |   |-- Car is facing up 
-                       if car.y <= triggerPoint then                                                                  --   |   |   |-- Car is above trigger
-                           if car.y <= (endpoint + 15) and round(car.rotation, 0) == (initialAngle + ammount) then    --   |   |   |   |-- Car is below endpoint
+        function self.getTurnAngle()                                                                                      --   Turn Funciton
+               if carOrientation == "v" then                                                                               --   |-- Car is turning from virticle position
+                   if carTriggerDirection == "up" then                                                                     --   |   |-- Car is facing up 
+                       if car.y <= triggerPoint then                                                                       --   |   |   |-- Car is above trigger
+                           if car.y <= (endpoint + 15) and round(car.rotation, 0) == (initialAngle + ammount) then         --   |   |   |   |-- Car is below endpoint
                                return true                                                                                 --   |   |   |   |   |-- turn complete
                                                                                                                            --   |   |   |   |
                            else                                                                                            --   |   |   |   |-- Car is above endpoint
-                               self.returnAngleV()                                                                 --   |   |   |       |-- Car starts to turn
+                               self.returnAngleV()                                                                         --   |   |   |       |-- Car starts to turn
                            end                                                                                             --   |   |   | 
                        end                                                                                                 --   |   |   |-- Turn doesn't start yet
                                                                                                                            --   |   |
-                   elseif carTriggerDirection == "down" then                                                          --   |   |-- Car is facing down
-                       if car.y >= triggerPoint then                                                                  --   |   |   |-- Car is below trigger
-                           if car.y >= (endpoint - 15) and round(car.rotation, 0) == (initialAngle + ammount) then    -- |   |-- Car is above endpoint
+                   elseif carTriggerDirection == "down" then                                                               --   |   |-- Car is facing down
+                       if car.y >= triggerPoint then                                                                       --   |   |   |-- Car is below trigger
+                           if car.y >= (endpoint - 15) and round(car.rotation, 0) == (initialAngle + ammount) then         --   |   |-- Car is above endpoint
                                return true                                                                                 --   |   |   |   |   |-- Returns true to mark turn complete
                                                                                                                            --   |   |   |   |
                            else                                                                                            --   |   |   |   |-- Car is below endpoint
-                               self.returnAngleV()                                                                 --   |   |   |       |-- Car starts to turn
+                               self.returnAngleV()                                                                         --   |   |   |       |-- Car starts to turn
                            end                                                                                             --   |   |   | 
                        end                                                                                                 --   |   |   |-- Car is above trigger, turn doesn't start yet
                    end                                                                                                     --   |   |
-                                                                                                                            --   |
-               elseif carOrientation == "h" then                                                                      --   |-- Car is turning from horizontal position
-                   if carTriggerDirection == "right" then                                                             --   |   |-- Car is facing right 
-                       if car.x >= triggerPoint then                                                                  --   |   |   |-- Car is right of the trigger
-                           if car.x >= (endpoint - 15) and round(car.rotation, 0) == (initialAngle + ammount) then     -- |   |-- Car is right of endpoint
+                                                                                                                           --   |
+               elseif carOrientation == "h" then                                                                           --   |-- Car is turning from horizontal position
+                   if carTriggerDirection == "right" then                                                                  --   |   |-- Car is facing right 
+                       if car.x >= triggerPoint then                                                                       --   |   |   |-- Car is right of the trigger
+                           if car.x >= (endpoint - 15) and round(car.rotation, 0) == (initialAngle + ammount) then         --   |   |-- Car is right of endpoint
                                return true                                                                                 --   |   |   |   |   |-- Returns true to mark turn
                                                                                                                            --   |   |   |   |
                            else                                                                                            --   |   |   |   |-- Car is left of endpoint
-                               self.returnAngleH()                                                                 --   |   |   |       |-- Car starts to turn complete
+                               self.returnAngleH()                                                                         --   |   |   |       |-- Car starts to turn complete
                            end                                                                                             --   |   |   | 
                        end                                                                                                 --   |   |   |-- Car is left of trigger, turn doesn't start yet
                                                                                                                            --   |   |
-                   elseif carTriggerDirection == "left" then                                                          --   |   |-- Car is facing left
-                       if car.x <= triggerPoint then                                                                  --   |   |   |-- Car is left of the trigger
-                           if car.x <= (endpoint + 15) and round(car.rotation, 0) == (initialAngle + ammount) then     -- |   |-- Car is right endpoint
+                   elseif carTriggerDirection == "left" then                                                               --   |   |-- Car is facing left
+                       if car.x <= triggerPoint then                                                                       --   |   |   |-- Car is left of the trigger
+                           if car.x <= (endpoint + 15) and round(car.rotation, 0) == (initialAngle + ammount) then         --   |   |-- Car is right endpoint
                                return true                                                                                 --   |   |   |   |   |-- Returns true to mark turn complete
                                                                                                                            --   |   |   |   |   
                            else                                                                                            --   |   |   |   |-- Car is left endpoint
-                               self.returnAngleH()                                                                 --   |   |   |   |   |-- Car starts to turn
+                               self.returnAngleH()                                                                         --   |   |   |   |   |-- Car starts to turn
                            end                                                                                             --   |   |   |       
                        end                                                                                                 --   |   |   |-- Car is right of trigger, turn doesn't start yet
                    end                                                                                                     --   |   |   |
-               end                                                                                                          --   |   |
+               end                                                                                                         --   |   |
            end                                                                                                             --   |
            
                return self        
            end 
           
      
-    
-    turn1 = turn(-90, 120, 1, 360, "v", 155, "up")
-    turn2 = turn(-90, 105, 1, 270, "h", 70, "left")
-    turn3 = turn(-90, 420, 1, 180, "v", 455, "down")
-    turn4 = turn(-90, 285, 1, 90, "h", 250, "right")    
+   ------------------------------------------
+   --            Creating turns            --
+   ------------------------------------------
+   --[[ To add the turns to a level, create a new global called turn1, and increment for ever turn there on. Using the comments bellow,
+    Add each property of turn, and if necessary, refering to the above section, turn object, for extra reference.
+   ]]--
+            
+--Properties of turn:
+    --endpoint (where on the coordinate system the car needs to stop while turning)
+    --ammount (the angle of the turn, usually 90)
+    --turnSpeed (equivelent to how sharp the turn is)
+    --initialAngle (orientation of car before turn)
+    --carOrientation (virticle v; horizontal h)
+    --triggerPoint (when to turn on coordinate system)
+    --carTriggerDirection (what side of the trigger point the turn happens (e.g. if the car is going up to a turn or down))
+           
+            
+   --Here is an example, the turns needed for the tutorial level.
+   --turn1 = turn(-90, 120, 1, 360, "v", 155, "up")
+   --turn2 = turn(-90, 105, 1, 270, "h", 70, "left")
+   --turn3 = turn(-90, 420, 1, 180, "v", 455, "down")
+   --turn4 = turn(-90, 285, 1, 90, "h", 250, "right")   
+            
+            
+            
+            
     local turnCounter = 1
     
     function winCondition(dimension, dirrection, position) --(the axis, the coordinate the car needs to pass, the dirrection the car is going in) 
@@ -494,18 +519,7 @@ end
         end                    
     end  
     
----------------------------------------
-----      Turning Logic      ----
----------------------------------------    
-    
-     
 
- 
-
-------------
--- End Old
-------------
-    --turn:new(o, ammount, endpoint, turnSpeed, initialAngle, carOrientation, triggerPoint, carTriggerDirection)
 
 -----------------------------------------------
 ------      EVENT LISTENER ON FRAME      ------
